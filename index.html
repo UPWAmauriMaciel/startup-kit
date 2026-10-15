@@ -10,14 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&family=Outfit:wght@500;700;900&display=swap">
   <style>
-/* Direction "manual": o guia em 3 passos do handoff "Start-up Kit v2".
-   O look vem dos estilos inline da marcacao portada; este arquivo cuida de
-   quatro coisas que o protótipo resolvia em React:
-     1. a troca largo/estreito, que era estado JS e aqui e media query (760px);
-     2. a visibilidade de estado, via [hidden] posto pelo app.html;
-     3. o movimento;
-     4. o endurecimento para celular e para o iframe do Apps Script.
-   Sem script a pagina mostra todos os cartoes abertos: longa, mas inteira. */
+/* Most of the look is inline in index.html. This file adds the wide/narrow switch
+   (760px), state styles toggled by app.html, motion and mobile fixes.
+   Without JavaScript every card is shown open. */
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -25,25 +20,25 @@ body {
   margin: 0; background: #fff; color: #1C1535;
   font-family: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;            /* nada de rolagem lateral no celular */
+  overflow-x: hidden;            /* no horizontal scroll on phones */
 }
 a { color: #4733FF; text-underline-offset: 3px; }
 button { font: inherit; color: inherit; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 3px solid #4733FF; outline-offset: 3px; }
-/* o toque nao deve piscar cinza nem selecionar o texto do botao */
+/* no grey tap flash or text selection on controls */
 a, button, [data-act] { -webkit-tap-highlight-color: transparent; }
 button, [data-act] { -webkit-user-select: none; user-select: none; }
 
-/* A marca e os pedais saem do nosso sprite, nao de assets/ soltos */
+/* logo and pedals come from the SVG sprite */
 .sp { display: block; fill: currentColor; }
 .sp--logo { height: 28px; width: auto; aspect-ratio: 1821.34 / 474.83; color: #4733FF; }
 .sp--logo-w { color: #fff; }
 .sp--pedal { width: 100%; height: auto; aspect-ratio: 777 / 464; color: #1C1535; }
 .n-only .sp--logo { height: 24px; }
 
-/* ---------- 1. A troca largo/estreito ---------- */
+/* ---------- 1. Wide / narrow ---------- */
 .w-only { display: none; }
 .n-only { display: block; }
 @media (min-width: 760px) {
@@ -51,9 +46,8 @@ button, [data-act] { -webkit-user-select: none; user-select: none; }
   .n-only { display: none; }
 }
 
-/* ---------- 2. Estado ----------
-   O app.html poe e tira [hidden]. O que depende de cor por estado vai por
-   variavel, para o estilo inline da marcacao continuar valendo. */
+/* ---------- 2. State ----------
+   app.html toggles [hidden]. State colours go through variables so the inline styles keep working. */
 [data-row] { --ring: #1C1535; --fill: transparent; --ink-mark: #1C1535; }
 [data-row].is-done { --ring: #4733FF; --fill: #4733FF; --ink-mark: #fff; }
 .chk { --chk-bg: #F4F4F6; --chk-box: #fff; }
@@ -61,16 +55,15 @@ button, [data-act] { -webkit-user-select: none; user-select: none; }
 [data-seg] { --seg-bg: #fff; --seg-fg: #1C1535; }
 [data-seg].is-sel { --seg-bg: #1C1535; --seg-fg: #fff; }
 
-/* o cabecalho precisa acompanhar a rolagem tambem dentro do iframe do Apps
-   Script, onde quem rola pode ser o documento de dentro: sticky aguenta os dois
-   casos, fixed descola. */
+/* sticky rather than fixed: inside the Apps Script iframe the inner document scrolls
+   and a fixed header would detach */
 header { position: sticky !important; top: 0; }
 #top, #unbox, #assemble, #ride, #later, #help, #finish { scroll-margin-top: 108px; }
 @media (max-width: 759.98px) { #top, #unbox, #assemble, #ride, #later, #help, #finish { scroll-margin-top: 140px; } }
 
-/* ---------- 3. Movimento ----------
-   Tudo em opacidade e transform, com cubic-bezier(.2,.7,.2,1), como na spec.
-   O estado escondido so existe com .js no html: sem script nada some. */
+/* ---------- 3. Motion ----------
+   Opacity and transform only. Hidden start states need .js on <html>, so nothing
+   disappears without JavaScript. */
 .js [data-rise] { opacity: 0; transform: translateY(26px); }
 .js [data-rise].is-in {
   opacity: 1; transform: none;
@@ -98,15 +91,15 @@ header { position: sticky !important; top: 0; }
 .js .anim-zoom { animation: m-zoom .5s cubic-bezier(.2,.7,.2,1) both; }
 .js .anim-pop  { animation: m-pop .38s cubic-bezier(.2,.7,.2,1) both; }
 
-/* o loader cobre a pagina enquanto o script monta o acordeao */
+/* the loader covers the page while the script sets it up */
 #loader { transition: opacity .48s ease; }
 #loader.is-out { opacity: 0; }
 #loader-bar { transform-origin: left center; transform: scaleX(0); }
 
-/* pressionar responde em todo controle */
+/* press feedback on every control */
 [data-act]:active, .js a[href^="#"]:active { transform: translateY(1px); }
 
-/* hover so onde ha ponteiro: no celular hover gruda depois do toque */
+/* hover only with a pointer; on touch screens it sticks after a tap */
 @media (hover: hover) {
   a:hover { color: #3220E0; }
   [data-act]:hover { filter: brightness(.97); }
@@ -119,32 +112,29 @@ header { position: sticky !important; top: 0; }
   #loader { transition: none; }
 }
 
-/* ---------- 4. Celular ----------
-   A marcacao do protótipo foi desenhada em 1440 e em 390; o que ela nao previu
-   e o que segue. */
+/* ---------- 4. Mobile ---------- */
 @media (max-width: 759.98px) {
-  /* nenhum bloco de duas colunas pode forcar largura no telefone */
+  /* two-column blocks stack on phones */
   [style*="flex:1 1 340px"], [style*="flex:1 1 420px"], [style*="flex:1 1 300px"] { flex-basis: 100% !important; }
-  /* titulos muito grandes quebram palavra em telas estreitas */
+  /* long headings may break inside words on narrow screens */
   h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
 }
-/* o display tem que caber mesmo a 320px */
+/* tighter card padding down to 320px */
 @media (max-width: 360px) {
   [style*="padding:clamp(20px,3vw,40px)"] { padding: 18px !important; }
 }
-/* Foto da bike (-1, de lado, olhando para a direita): espelhada para o guidao apontar para o texto.
-   A foto de reserva nao entra. */
+/* The bike photo (-1, side view facing right) is mirrored so the handlebar points at the text.
+   The fallback photo is not. */
 [data-bike-slot]:not(.is-fallback) [data-bike-img] { transform: scaleX(-1); }
 
-/* ---- Sem ID: a foto de reserva fica no mesmo lugar e tamanho da foto da bike, mas parada:
-   o zoom de entrada do hero, nela, aparecia como um tranco. ---- */
+/* Fallback photo: same place and size as the bike photo, without the entry zoom. */
 .js [data-hero-img].is-fallback { opacity: 1; transform: none; transition: none; }
-/* A foto de reserva (floresta) e escura: o esfumacado de baixo, feito para foto de estudio
-   com fundo branco, nao chega ao branco e deixa uma borda. So no layout estreito. */
+/* The fallback photo is dark, so the bottom fade (made for white studio photos) is
+   adjusted to avoid a visible edge. Narrow layout only. */
 .n-only [data-bike-slot].is-fallback > span:nth-of-type(2) { height: 62% !important; }
 .n-only [data-bike-slot].is-fallback > span:nth-of-type(3) { bottom: -1px !important; height: 16px !important; }
 
-/* ---- Idioma: botao em pilula como o Help + menu (Material 3: itens de 48px, 112-280px) ---- */
+/* ---------- Language menu ---------- */
 .lang { position: relative; flex: none; }
 .lang__btn {
   display: flex; align-items: center; gap: 8px; min-height: 48px; box-sizing: border-box;
@@ -181,7 +171,7 @@ header { position: sticky !important; top: 0; }
   .lang__code { display: inline; }
 }
 
-/* ---- Video: capa com o play da marca; o YouTube so entra no play ---- */
+/* ---------- Video cover ---------- */
 .vposter { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: #1C1535; cursor: pointer; display: block; }
 .vposter img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .9; transition: opacity .2s ease, transform .5s ease; }
 .vposter:hover img { opacity: 1; transform: scale(1.02); }
@@ -377,7 +367,6 @@ header { position: sticky !important; top: 0; }
           <p style="margin:0;font:400 clamp(18px,1.5vw,20px)/1.55 'Hanken Grotesk';text-wrap:pretty" data-t="step-1-unbox.lay-the-box-flat">Lay the box flat on its side. Then slide the bike out together.</p>
           <div style="margin-top:auto;display:flex;flex-wrap:wrap;gap:10px"><button data-act="u2:next" style="cursor:pointer;border:0;display:flex;align-items:center;gap:28px;background:#4733FF;color:#fff;border-radius:999px;padding:22px 28px;font:700 19px/1 'Outfit';transition:background-color .2s ease,transform .15s ease" style-active="transform:scale(.97)" style-hover="background:#3220E0"><span data-t="step-1-unbox.done-next-part">Done, next part</span><span>→</span></button></div>
         </div>
-        <div hidden data-photo-todo="unbox-slide-out" style="flex:1 1 340px;min-height:260px;border-radius:24px;background:repeating-linear-gradient(135deg,#ECEAE4 0 10px,#F4F2EC 10px 20px);display:grid;place-items:center"><span style="font:500 13px/1.4 ui-monospace,Menlo,monospace;color:#5E5873;text-align:center" data-t="step-1-unbox.photo-box-on-its">photo: box on its side,<br>bike sliding out</span></div>
       </div>
     
 
@@ -678,7 +667,7 @@ header { position: sticky !important; top: 0; }
 
   <script>var FORCED_LANG = "", BIKE_ID = "";</script>
   <script>
-// Stem photos from the DE in-box flyer (p.2), 480px WebP. <img data-img="name"> gets its src from here.
+// Page photos as WebP data URIs. <img data-img="name"> gets its src from here.
 window.PHOTOS = {
   "stem-1bolt": "data:image/webp;base64,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",
   "stem-lever": "data:image/webp;base64,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",
@@ -700,7 +689,6 @@ window.COPY = {
   "page.3-ride": "3 Ride",
   "page.help": "Help",
   "hero.your-e-bike": "Your e-bike",
-  "hero.the-official-start-up": "✓ The official start-up guide for every Upway e-bike",
   "hero.three-steps-to-your": "Three steps to your first ride.",
   "hero.thank-you-for-your": "Thank you for your order. This page shows you how to unpack your e-bike, put it together and get riding.",
   "hero.20-min": "20 min",
@@ -723,15 +711,12 @@ window.COPY = {
   "step-1-unbox.part-1-of-4": "Part 1 of 4",
   "step-1-unbox.an-e-bike-is": "An e-bike is heavier than a normal bike. Ask someone to help you lift it out of the box.",
   "step-1-unbox.done-next-part": "Done, next part",
-  "step-1-unbox.photo-two-people-next": "photo: two people<br>next to the box",
   "step-1-unbox.open-the-box-at": "Open the box at the top",
   "step-1-unbox.part-2-of-4": "Part 2 of 4",
   "step-1-unbox.open-the-flaps-on": "Open the flaps on the top of the box. That’s the easiest way to get the bike out.",
-  "step-1-unbox.photo-box-opened-at": "photo: box opened<br>at the top",
   "step-1-unbox.tip-the-box-and": "Tip the box and slide the bike out",
   "step-1-unbox.part-3-of-4": "Part 3 of 4",
   "step-1-unbox.lay-the-box-flat": "Lay the box flat on its side. Then slide the bike out together.",
-  "step-1-unbox.photo-box-on-its": "photo: box on its side,<br>bike sliding out",
   "step-1-unbox.check-what-s-in": "Check what’s in the box",
   "step-1-unbox.part-4-of-4": "Part 4 of 4",
   "step-1-unbox.next-to-the-bike": "Next to the bike you’ll find a start-up kit. We ticked each item on the box label. If an item is crossed out, your bike doesn’t need it.",
@@ -924,7 +909,6 @@ window.COPY = {
   "page.3-ride": "3 Losfahren",
   "page.help": "Hilfe",
   "hero.your-e-bike": "Dein E-Bike",
-  "hero.the-official-start-up": "✓ Die offizielle Startanleitung für jedes Upway-E-Bike",
   "hero.three-steps-to-your": "In drei Schritten zur ersten Fahrt.",
   "hero.thank-you-for-your": "Vielen Dank für deine Bestellung! Hier erfährst du, wie du dein E-Bike auspackst, montierst und losfährst.",
   "hero.20-min": "20 Min.",
@@ -947,15 +931,12 @@ window.COPY = {
   "step-1-unbox.part-1-of-4": "Teil 1 von 4",
   "step-1-unbox.an-e-bike-is": "Ein E-Bike ist schwerer als ein gewöhnliches Fahrrad. Bitte jemanden, dir beim Herausheben aus dem Karton zu helfen.",
   "step-1-unbox.done-next-part": "Fertig, weiter",
-  "step-1-unbox.photo-two-people-next": "Foto: zwei Personen<br>neben dem Karton",
   "step-1-unbox.open-the-box-at": "Karton oben öffnen",
   "step-1-unbox.part-2-of-4": "Teil 2 von 4",
   "step-1-unbox.open-the-flaps-on": "Öffne die Klappen oben am Karton. So bekommst du das Fahrrad am einfachsten heraus.",
-  "step-1-unbox.photo-box-opened-at": "Foto: Karton oben<br>geöffnet",
   "step-1-unbox.tip-the-box-and": "Karton kippen und Fahrrad herausschieben",
   "step-1-unbox.part-3-of-4": "Teil 3 von 4",
   "step-1-unbox.lay-the-box-flat": "Leg den Karton flach auf die Seite. Dann schiebt ihr das Fahrrad gemeinsam heraus.",
-  "step-1-unbox.photo-box-on-its": "Foto: Karton auf der Seite,<br>Fahrrad wird herausgeschoben",
   "step-1-unbox.check-what-s-in": "Prüf, was im Karton ist",
   "step-1-unbox.part-4-of-4": "Teil 4 von 4",
   "step-1-unbox.next-to-the-bike": "Neben dem Fahrrad findest du ein Start-up-Kit. Wir haben jedes Teil auf dem Etikett am Karton abgehakt. Ist ein Teil durchgestrichen, braucht dein E-Bike es nicht.",
@@ -1148,7 +1129,6 @@ window.COPY = {
   "page.3-ride": "3 Rouler",
   "page.help": "Aide",
   "hero.your-e-bike": "Votre vélo électrique",
-  "hero.the-official-start-up": "✓ Le guide de démarrage officiel des vélos électriques Upway",
   "hero.three-steps-to-your": "En selle en trois étapes.",
   "hero.thank-you-for-your": "Merci pour votre commande ! Voici comment déballer votre vélo électrique, le monter et prendre la route.",
   "hero.20-min": "20 min",
@@ -1171,15 +1151,12 @@ window.COPY = {
   "step-1-unbox.part-1-of-4": "Partie 1 sur 4",
   "step-1-unbox.an-e-bike-is": "Un vélo électrique est plus lourd qu’un vélo classique. Demandez à quelqu’un de vous aider à le sortir du carton.",
   "step-1-unbox.done-next-part": "Fait, partie suivante",
-  "step-1-unbox.photo-two-people-next": "photo : deux personnes<br>à côté du carton",
   "step-1-unbox.open-the-box-at": "Ouvrir le carton par le haut",
   "step-1-unbox.part-2-of-4": "Partie 2 sur 4",
   "step-1-unbox.open-the-flaps-on": "Ouvrez les rabats sur le dessus du carton. C’est le plus simple pour sortir le vélo.",
-  "step-1-unbox.photo-box-opened-at": "photo : carton ouvert<br>par le haut",
   "step-1-unbox.tip-the-box-and": "Coucher le carton, sortir le vélo",
   "step-1-unbox.part-3-of-4": "Partie 3 sur 4",
   "step-1-unbox.lay-the-box-flat": "Couchez le carton à plat. Puis, à deux, faites glisser le vélo dehors.",
-  "step-1-unbox.photo-box-on-its": "photo : carton couché,<br>le vélo glisse dehors",
   "step-1-unbox.check-what-s-in": "Vérifier le contenu du carton",
   "step-1-unbox.part-4-of-4": "Partie 4 sur 4",
   "step-1-unbox.next-to-the-bike": "À côté du vélo, vous trouverez un kit de démarrage. Nous avons coché chaque élément sur l’étiquette du carton. Si un élément est barré, votre vélo n’en a pas besoin.",
@@ -1372,7 +1349,6 @@ window.COPY = {
   "page.3-ride": "3 Rijden",
   "page.help": "Hulp",
   "hero.your-e-bike": "Je e-bike",
-  "hero.the-official-start-up": "✓ De officiële startgids voor elke Upway e-bike",
   "hero.three-steps-to-your": "In drie stappen naar je eerste rit.",
   "hero.thank-you-for-your": "Bedankt voor je bestelling. Hier zie je hoe je de e-bike uitpakt, in elkaar zet en ermee op pad gaat.",
   "hero.20-min": "20 min",
@@ -1395,15 +1371,12 @@ window.COPY = {
   "step-1-unbox.part-1-of-4": "Deel 1 van 4",
   "step-1-unbox.an-e-bike-is": "Een e-bike is zwaarder dan een gewone fiets. Vraag iemand om je te helpen hem uit de doos te tillen.",
   "step-1-unbox.done-next-part": "Klaar, volgend deel",
-  "step-1-unbox.photo-two-people-next": "foto: twee personen<br>naast de doos",
   "step-1-unbox.open-the-box-at": "Open de doos aan de bovenkant",
   "step-1-unbox.part-2-of-4": "Deel 2 van 4",
   "step-1-unbox.open-the-flaps-on": "Open de kleppen bovenop de doos. Zo krijg je de fiets er het makkelijkst uit.",
-  "step-1-unbox.photo-box-opened-at": "foto: doos open<br>aan de bovenkant",
   "step-1-unbox.tip-the-box-and": "Kantel de doos en schuif de fiets eruit",
   "step-1-unbox.part-3-of-4": "Deel 3 van 4",
   "step-1-unbox.lay-the-box-flat": "Leg de doos plat op de zijkant. Schuif de fiets er dan samen uit.",
-  "step-1-unbox.photo-box-on-its": "foto: doos op de zijkant,<br>fiets schuift eruit",
   "step-1-unbox.check-what-s-in": "Controleer wat er in de doos zit",
   "step-1-unbox.part-4-of-4": "Deel 4 van 4",
   "step-1-unbox.next-to-the-bike": "Naast de fiets vind je een startpakket. We hebben elk onderdeel aangevinkt op het label van de doos. Is een onderdeel doorgestreept? Dan heeft je fiets het niet nodig.",
@@ -1596,7 +1569,6 @@ window.COPY = {
   "page.3-ride": "3 Pedalea",
   "page.help": "Ayuda",
   "hero.your-e-bike": "Tu bici eléctrica",
-  "hero.the-official-start-up": "✓ La guía oficial de puesta en marcha de todas las bicis eléctricas Upway",
   "hero.three-steps-to-your": "Tres pasos hasta tu primera salida.",
   "hero.thank-you-for-your": "Gracias por tu pedido. Aquí te explicamos cómo desembalar tu bici eléctrica, montarla y salir a rodar.",
   "hero.20-min": "20 min",
@@ -1619,15 +1591,12 @@ window.COPY = {
   "step-1-unbox.part-1-of-4": "Parte 1 de 4",
   "step-1-unbox.an-e-bike-is": "Una bici eléctrica pesa más que una normal. Pide a alguien que te ayude a sacarla de la caja.",
   "step-1-unbox.done-next-part": "Hecho, siguiente parte",
-  "step-1-unbox.photo-two-people-next": "foto: dos personas<br>junto a la caja",
   "step-1-unbox.open-the-box-at": "Abre la caja por arriba",
   "step-1-unbox.part-2-of-4": "Parte 2 de 4",
   "step-1-unbox.open-the-flaps-on": "Abre las solapas de la parte de arriba. Así es más fácil sacar la bici.",
-  "step-1-unbox.photo-box-opened-at": "foto: caja abierta<br>por arriba",
   "step-1-unbox.tip-the-box-and": "Tumba la caja y desliza la bici fuera",
   "step-1-unbox.part-3-of-4": "Parte 3 de 4",
   "step-1-unbox.lay-the-box-flat": "Pon la caja tumbada de lado. Después, desliza la bici fuera con la otra persona.",
-  "step-1-unbox.photo-box-on-its": "foto: caja de lado,<br>bici saliendo",
   "step-1-unbox.check-what-s-in": "Revisa qué hay en la caja",
   "step-1-unbox.part-4-of-4": "Parte 4 de 4",
   "step-1-unbox.next-to-the-bike": "Junto a la bici encontrarás un kit de puesta en marcha. Hemos marcado cada elemento en la etiqueta de la caja. Si alguno aparece tachado, tu bici no lo necesita.",
@@ -1820,7 +1789,6 @@ window.COPY = {
   "page.3-ride": "3 Pedala",
   "page.help": "Aiuto",
   "hero.your-e-bike": "La tua e-bike",
-  "hero.the-official-start-up": "✓ La guida rapida ufficiale per ogni e-bike Upway",
   "hero.three-steps-to-your": "Tre passi verso la tua prima uscita.",
   "hero.thank-you-for-your": "Grazie per il tuo ordine. Qui ti mostriamo come disimballare la tua e-bike, montarla e partire.",
   "hero.20-min": "20 min",
@@ -1843,15 +1811,12 @@ window.COPY = {
   "step-1-unbox.part-1-of-4": "Parte 1 di 4",
   "step-1-unbox.an-e-bike-is": "Una e-bike pesa più di una bici normale. Chiedi a qualcuno di aiutarti a tirarla fuori dalla scatola.",
   "step-1-unbox.done-next-part": "Fatto, avanti",
-  "step-1-unbox.photo-two-people-next": "foto: due persone<br>accanto alla scatola",
   "step-1-unbox.open-the-box-at": "Apri la scatola dall’alto",
   "step-1-unbox.part-2-of-4": "Parte 2 di 4",
   "step-1-unbox.open-the-flaps-on": "Apri le alette in cima alla scatola. È il modo più facile per tirare fuori la bici.",
-  "step-1-unbox.photo-box-opened-at": "foto: scatola aperta<br>dall’alto",
   "step-1-unbox.tip-the-box-and": "Corica la scatola e sfila la bici",
   "step-1-unbox.part-3-of-4": "Parte 3 di 4",
   "step-1-unbox.lay-the-box-flat": "Appoggia la scatola su un fianco. Poi sfilate la bici insieme.",
-  "step-1-unbox.photo-box-on-its": "foto: scatola su un fianco,<br>bici che scivola fuori",
   "step-1-unbox.check-what-s-in": "Controlla cosa c’è nella scatola",
   "step-1-unbox.part-4-of-4": "Parte 4 di 4",
   "step-1-unbox.next-to-the-bike": "Accanto alla bici trovi un kit di avvio. Sull’etichetta della scatola abbiamo spuntato ogni articolo. Se un articolo è barrato, alla tua bici non serve.",
@@ -2042,15 +2007,11 @@ window.COPY = {
 </script>
 
   <script>
-/* Direction "manual": o comportamento que o protótipo fazia em React, aqui em JS puro.
-   Substitui o app.html compartilhado nesta direcao, entao cobre tambem o
-   religamento das fotos locais, a foto da bike por ?b= e a rolagem suave.
-
-   Duas escolhas deliberadas, as duas por causa do iframe do Apps Script:
-   - a revelacao no scroll e por teste de retangulo, nao IntersectionObserver:
-     num webview onde o observador fica suspenso, conteudo escondido nunca mais
-     aparece, e esta e a primeira pagina que o cliente ve;
-   - nada depende de 100vh/dvh, que dentro do iframe mede o iframe. */
+/* Page behaviour: bike photo, language, steps, accordions, video, scroll reveal.
+   Two constraints come from the Apps Script iframe:
+   - scroll reveal checks getBoundingClientRect instead of using IntersectionObserver,
+     which can stay suspended in some webviews and leave content hidden;
+   - nothing relies on 100vh/dvh, which would measure the iframe. */
 (function () {
   var PARTS = { u: 4, a: 3, r: 2 };
   var AFTER = { u: 'assemble', a: 'ride', r: 'finish' };
@@ -2066,7 +2027,7 @@ window.COPY = {
   function anim(el, cls) {
     if (!el || reduce) return;
     el.classList.remove(cls);
-    void el.offsetWidth;            // reinicia a animacao
+    void el.offsetWidth;            // restart the animation
     el.classList.add(cls);
   }
   function param(name) {
@@ -2081,40 +2042,38 @@ window.COPY = {
     try { window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); } catch (e) { window.scrollTo(0, y); }
   }
 
-  /* ---------------- fotos locais e a bike do cliente ---------------- */
+  /* ---------------- photos ---------------- */
   var PHOTOS = window.PHOTOS || {};
   all('[data-img]').forEach(function (el) { var n = el.getAttribute('data-img'); if (PHOTOS[n]) el.src = PHOTOS[n]; });
 
   var BIKE = String((typeof BIKE_ID === 'string' && BIKE_ID) || param('b')).toUpperCase();
   if (!/^[A-Z0-9]{6}$/.test(BIKE)) BIKE = '';
   var heroImgs = all('[data-bike-img]');
-  // Sem ID, ou se a foto da bike nao existe, entra a foto do template (e-MTB na floresta).
+  // No bike id, or no photo for it: show the fallback photo.
   var FALLBACK = PHOTOS['hero-fallback'];
   function fallback(im) {
     var box = im.closest ? im.closest('[data-bike-slot]') : null;
     if (FALLBACK) { im.src = FALLBACK; im.alt = ''; if (box) box.classList.add('is-fallback'); return; }
-    if (box) box.style.visibility = 'hidden';       // sem nada, fica o branco do estudio
+    if (box) box.style.visibility = 'hidden';       // no fallback either: keep the white background
   }
   heroImgs.forEach(function (im) {
     if (!BIKE) return fallback(im);
-    // A -1 e a unica foto de angulo padrao (a -6 as vezes vem de costas). Ela olha para a
-    // direita; o CSS espelha, para o guidao apontar para o texto.
+    // -1 is the only photo with a consistent angle (side view, facing right).
+    // The CSS mirrors it so the handlebar points at the text.
     im.addEventListener('error', function () { fallback(im); }, { once: true });
     im.src = 'https://storage.googleapis.com/upway-public/images/bikes/' + BIKE + '-1.jpg';
   });
 
-  /* O cabecalho e sticky (fixed descola dentro do iframe), mas o hero foi desenhado
-     para correr por baixo dele, com o recuo do texto ja contando a altura dele. Sem
-     isto o recuo conta duas vezes e sobra uma faixa branca no topo. */
+  /* The header is sticky and the hero's top padding already includes its height.
+     Pull the hero up by the header height so that space isn't added twice. */
   var hdr = q('header'), hero = document.getElementById('top');
   function tuck() { if (hdr && hero) hero.style.marginTop = -hdr.offsetHeight + 'px'; }
   tuck();
   window.addEventListener('resize', tuck);
 
-  /* ---------------- idioma ----------------
-     Textos em window.COPY (copy.html), um bloco por idioma. Ordem: a escolha que o cliente
-     ja fez no seletor, o ?lang= do QR (idioma do pedido no BO), os idiomas do navegador,
-     ingles. Chave que falta num idioma cai no ingles. */
+  /* ---------------- language ----------------
+     Text lives in window.COPY (copy.html). Order: the visitor's earlier choice, ?lang= from
+     the QR code (order language), browser languages, English. Missing keys fall back to English. */
   var COPY = window.COPY || {};
   var LANGS = Object.keys(COPY);
   function saved(v) {
@@ -2131,7 +2090,7 @@ window.COPY = {
   }
   var lang = pickLang();
   function T(k) { return (COPY[lang] && COPY[lang][k]) || (COPY.en && COPY.en[k]) || ''; }
-  /* O logo leva ao site da Upway do idioma; Austria e Belgica pelo pais do navegador. */
+  /* The logo links to the local Upway site; Austria and Belgium come from the browser region. */
   var SITES = { de: 'https://upway.de', fr: 'https://upway.fr', nl: 'https://upway.nl', es: 'https://upway.es', it: 'https://upway.it', en: 'https://upway.de' };
   function siteUrl() {
     var region = '';
@@ -2145,9 +2104,8 @@ window.COPY = {
     return SITES[lang] || SITES.en;
   }
 
-  /* Menu de idioma no lugar do <select> nativo: botao em pilula como o Help e uma lista
-     no padrao de menu do Material 3 (itens de 48px, selecionado com check), com teclado
-     completo (setas, Home/End, Enter, Esc) e fechamento ao tocar fora. */
+  /* Replaces the native <select> with a listbox menu: arrow keys, Home/End, Enter and
+     Escape work, and a click outside closes it. */
   function icon(name, cls) { return '<svg class="' + (cls || '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
   var MENUS = [];
   function closeMenus(except) {
@@ -2223,7 +2181,7 @@ window.COPY = {
   }
   if (LANGS.length) applyLang();
 
-  /* ---------------- as partes de cada passo ---------------- */
+  /* ---------------- step parts ---------------- */
   function total(step) { return PARTS[step]; }
   function renderStep(step) {
     for (var i = 0; i < total(step); i++) {
@@ -2273,7 +2231,7 @@ window.COPY = {
     if (every) { on(banner); anim(banner, 'anim-zoom'); } else off(banner);
   }
 
-  /* ---------------- avanco do guidao, inclinacao, checagens ---------------- */
+  /* ---------------- stem, tilt, final checks ---------------- */
   function renderStem() {
     for (var i = 0; i < 3; i++) {
       var pill = q('[data-act="st' + i + ':on"]');
@@ -2281,7 +2239,7 @@ window.COPY = {
       var mark = when('st' + i + '.sel');
       if (mark) mark.hidden = st.stem !== i;
     }
-    // o segundo marcador de cada avanco (foto + descricao) tem o mesmo data-when
+    // each stem option has a second marker (photo + caption) with the same data-when
     all('[data-when^="st"]').forEach(function (el) {
       var n = +el.getAttribute('data-when').charAt(2);
       el.hidden = st.stem !== n;
@@ -2300,7 +2258,7 @@ window.COPY = {
     if (n === 5 && !st.done.r1) completePart('r', 1);
   }
 
-  /* ---------------- acordeoes: um aberto por familia ---------------- */
+  /* ---------------- accordions: one open per group ---------------- */
   function renderAcc(prefix, openIdx, count) {
     for (var i = 0; i < count; i++) {
       var body = when(prefix + i);
@@ -2313,7 +2271,7 @@ window.COPY = {
     }
   }
 
-  /* ---------------- cliques ---------------- */
+  /* ---------------- clicks ---------------- */
   document.addEventListener('click', function (e) {
     if (!e.target.closest) return;
     var el = e.target.closest('[data-act]');
@@ -2344,7 +2302,7 @@ window.COPY = {
       }
       if (act === 'openVideo') {
         var v = when('video');
-        all('[data-video] img[data-src]').forEach(function (im) { if (!im.src) im.src = im.getAttribute('data-src'); }); // capa so ao abrir
+        all('[data-video] img[data-src]').forEach(function (im) { if (!im.src) im.src = im.getAttribute('data-src'); }); // load the cover only when the modal opens
         on(v); anim(v, 'anim-fade'); return;
       }
       if (act === 'playVideo') { playVideo(el); return; }
@@ -2360,7 +2318,7 @@ window.COPY = {
         return;
       }
     }
-    // links internos: rolagem com o desconto do cabecalho
+    // in-page links: scroll with the header offset
     var a = e.target.closest('a[href^="#"]');
     if (a && a.getAttribute('href').length > 1) { e.preventDefault(); goTo(a.getAttribute('href').slice(1)); }
   });
@@ -2369,8 +2327,8 @@ window.COPY = {
   });
 
   /* ---------------- video ----------------
-     O modal abre com a capa e o play da marca; o player do YouTube so carrega no play
-     (no 4G, nada de ~1 MB de player escondido) e sai ao fechar, o que para o som. */
+     The modal shows a cover first. The YouTube player loads only on play and is removed
+     on close, which also stops the sound. */
   function playVideo(poster) {
     var box = poster.parentNode;
     var f = document.createElement('iframe');
@@ -2389,7 +2347,7 @@ window.COPY = {
     off(v);
   }
 
-  /* ---------------- revelacao no scroll ---------------- */
+  /* ---------------- scroll reveal ---------------- */
   var rise = [];
   all('[data-stagger]').forEach(function (w) {
     [].slice.call(w.children).forEach(function (el, i) {
@@ -2404,29 +2362,29 @@ window.COPY = {
     }
   });
   var ticking = false;
-  function revelar() {
+  function reveal() {
     ticking = false;
-    var limite = (window.innerHeight || 800) * 0.9;
+    var limit = (window.innerHeight || 800) * 0.9;
     for (var i = rise.length - 1; i >= 0; i--) {
       var r = rise[i].getBoundingClientRect();
-      if (r.top < limite && r.bottom > 0) { rise[i].classList.add('is-in'); rise.splice(i, 1); }
+      if (r.top < limit && r.bottom > 0) { rise[i].classList.add('is-in'); rise.splice(i, 1); }
     }
   }
-  function agendar() {
+  function schedule() {
     if (ticking) return;
     ticking = true;
-    if (window.requestAnimationFrame) requestAnimationFrame(revelar); else setTimeout(revelar, 16);
+    if (window.requestAnimationFrame) requestAnimationFrame(reveal); else setTimeout(reveal, 16);
   }
-  addEventListener('scroll', agendar, { passive: true });
-  addEventListener('resize', agendar);
-  addEventListener('load', agendar);
-  // rede de seguranca: o que sobrar escondido aparece de qualquer jeito
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule);
+  addEventListener('load', schedule);
+  // show anything still hidden after 6 s
   setTimeout(function () { while (rise.length) rise.pop().classList.add('is-in'); }, 6000);
 
   /* ---------------- loader ---------------- */
   function startHero() {
     all('[data-hero], [data-hero-img]').forEach(function (el) { el.classList.add('is-in'); });
-    revelar();
+    reveal();
   }
   (function loader() {
     var ov = q('#loader'), bar = q('#loader-bar');
@@ -2451,7 +2409,7 @@ window.COPY = {
     setTimeout(finish, 2600);
   })();
 
-  /* ---------------- estado inicial ---------------- */
+  /* ---------------- initial state ---------------- */
   ['u', 'a', 'r'].forEach(renderStep);
   renderStem();
   renderChecks();
