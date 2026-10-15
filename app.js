@@ -194,6 +194,7 @@
       }
     }
     renderProgress();
+    schedule();                     // a card that was hidden may now need revealing
   }
   function renderProgress() {
     ['u', 'a', 'r'].forEach(function (step) {
