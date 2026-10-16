@@ -48,6 +48,9 @@ If company policy does not allow Google Fonts, the two fonts can be self-hosted 
 
 ## Options
 
+**Upway's Shopify store (chosen).** The page becomes a theme template with no store layout, so it loads none
+of the theme or app scripts. Files and step-by-step setup: [`shopify/`](shopify/README.md).
+
 **Google Cloud Storage.** The `upway-public` bucket already serves the bike photos publicly:
 
 ```
@@ -72,4 +75,5 @@ this repository to an Upway organization and add a custom domain.
 ## Updating the page
 
 The source is in the Upway extension repository, branch `feat/startup-kit-landing`, folder `startup-kit/`.
-Run `node startup-kit/preview.mjs` and copy the contents of `startup-kit/build/site/` here.
+Run `node startup-kit/preview.mjs` and copy the contents of `startup-kit/build/site/` here, and
+`startup-kit/build/shopify/` to `shopify/`.
