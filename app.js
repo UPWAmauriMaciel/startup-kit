@@ -209,7 +209,11 @@
     clearTimeout(fitTimer);
     fitTimer = setTimeout(function () { fitHeadings(document); }, 150);
   });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitHeadings(document); });
+  // Measure again when web fonts finish loading: a heading measured in the fallback font gets the wrong size.
+  if (document.fonts) {
+    if (document.fonts.ready) document.fonts.ready.then(function () { fitHeadings(document); });
+    if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { fitHeadings(document); });
+  }
 
   function applyLang() {
     document.documentElement.lang = lang;
