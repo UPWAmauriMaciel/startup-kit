@@ -100,12 +100,26 @@ header { position: sticky !important; top: 0; }
   #loader { transition: none; }
 }
 
-/* ---------- 4. Mobile ---------- */
+/* ---------- 4. Text across languages ----------
+   Balanced headings and no automatic hyphenation: phones would split words like "herausschie-ben".
+   A word that still can't fit breaks rather than overflowing. app.js keeps numbers with the next
+   word, wraps short hyphenated words in .nw and shrinks headings that need more lines than in English. */
+h1, h2, h3 { text-wrap: balance; hyphens: manual; overflow-wrap: break-word; }
+p, li { text-wrap: pretty; }
+[data-act] span, a[href^="#"] span, button span { text-wrap: balance; }
+.nw { white-space: nowrap !important; }   /* the text-wrap shorthand above would turn wrapping back on */
+header nav [data-t] { white-space: nowrap; }
+.stats { grid-template-columns: repeat(3, auto) !important; justify-content: space-between; column-gap: 20px !important; }
+.stats > div > span:first-child { white-space: nowrap; }
+/* tablet: the three step labels need the room of the full language name */
+@media (min-width: 760px) and (max-width: 1099.98px) {
+  header .w-only > div { padding: 0 28px !important; gap: 24px !important; }
+}
+
+/* ---------- 5. Mobile ---------- */
 @media (max-width: 759.98px) {
   /* two-column blocks stack on phones */
   [style*="flex:1 1 340px"], [style*="flex:1 1 420px"], [style*="flex:1 1 300px"] { flex-basis: 100% !important; }
-  /* long headings may break inside words on narrow screens */
-  h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
 }
 /* tighter card padding down to 320px */
 @media (max-width: 360px) {
@@ -153,7 +167,7 @@ header { position: sticky !important; top: 0; }
 .lang__menu li[aria-selected="true"] .lang__tag { color: #4733FF; }
 .lang__ok { visibility: hidden; color: #4733FF; }
 .lang__menu li[aria-selected="true"] .lang__ok { visibility: visible; }
-@media (max-width: 759px) {
+@media (max-width: 1099.98px) {           /* phone and tablet: language code instead of the name */
   .lang__btn { padding: 0 12px; font-size: 14px; }
   .lang__name { display: none; }
   .lang__code { display: inline; }

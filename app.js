@@ -151,9 +151,69 @@
   });
   document.addEventListener('click', function (e) { if (!e.target.closest || !e.target.closest('.lang')) closeMenus(); });
 
+  /* Numbers stay with the next word ("2 Personen"); short hyphenated words ("contactez-nous", "E-Bike")
+     don't break at the hyphen. The fonts have no non-breaking hyphen glyph, hence the .nw span. */
+  function keepTogether(el) {
+    var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [], n;
+    while ((n = walk.nextNode())) nodes.push(n);
+    nodes.forEach(function (t) {
+      var parts = t.data.replace(/(\d) (?=\S)/g, '$1\u00a0').split(/(\p{L}+(?:-\p{L}+)+)/u);
+      if (parts.length === 1) { t.data = parts[0]; return; }
+      var frag = document.createDocumentFragment();
+      parts.forEach(function (p, i) {
+        if (i % 2 && p.length <= 18) { var s = document.createElement('span'); s.className = 'nw'; s.textContent = p; frag.appendChild(s); }
+        else if (p) frag.appendChild(document.createTextNode(p));
+      });
+      t.parentNode.replaceChild(frag, t);
+    });
+  }
+
+  /* A heading that needs more lines than in English shrinks, down to 82% of its size, to the English
+     line count or, failing that, one line more. If shrinking doesn't save a line it keeps its size. */
+  function lineCount(el) {
+    var r = document.createRange(), tops = [];
+    r.selectNodeContents(el);
+    [].forEach.call(r.getClientRects(), function (b) {
+      if (b.width > 0.5 && !tops.some(function (t) { return Math.abs(t - b.top) < 4; })) tops.push(b.top);
+    });
+    return tops.length;
+  }
+  function fitHeadings(root) {
+    all('h1[data-t], h2[data-t], h3[data-t]', root).forEach(function (el) {
+      if (el.dataset.fs == null) el.dataset.fs = el.style.fontSize;
+      el.style.fontSize = el.dataset.fs;
+      var en = COPY.en && COPY.en[el.getAttribute('data-t')];
+      if (lang === 'en' || !en || !el.getClientRects().length) return;
+      var html = el.innerHTML;
+      el.innerHTML = en;
+      var target = lineCount(el);
+      el.innerHTML = html;
+      var now = lineCount(el);
+      if (now <= target) return;
+      var base = parseFloat(getComputedStyle(el).fontSize), floor = base * 0.82;
+      for (var t = target; t < now; t++) {
+        el.style.fontSize = floor + 'px';
+        if (lineCount(el) > t) continue;
+        var lo = floor, hi = base;       // largest size that still fits in t lines
+        while (hi - lo > 0.5) { var mid = (lo + hi) / 2; el.style.fontSize = mid + 'px'; if (lineCount(el) <= t) lo = mid; else hi = mid; }
+        el.style.fontSize = lo + 'px';
+        return;
+      }
+      el.style.fontSize = el.dataset.fs;
+    });
+  }
+  var fitWidth = window.innerWidth, fitTimer;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth === fitWidth) return;  // phones fire resize when the URL bar hides
+    fitWidth = window.innerWidth;
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(function () { fitHeadings(document); }, 150);
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitHeadings(document); });
+
   function applyLang() {
     document.documentElement.lang = lang;
-    all('[data-t]').forEach(function (el) { var v = T(el.getAttribute('data-t')); if (v) el.innerHTML = v; });
+    all('[data-t]').forEach(function (el) { var v = T(el.getAttribute('data-t')); if (v) { el.innerHTML = v; keepTogether(el); } });
     [['data-t-alt', 'alt'], ['data-t-label', 'aria-label'], ['data-t-title', 'title']].forEach(function (p) {
       all('[' + p[0] + ']').forEach(function (el) {
         var v = T(el.getAttribute(p[0]));
@@ -169,6 +229,7 @@
       m.list.setAttribute('aria-label', T('ui.language'));
     });
     all('a[data-site]').forEach(function (a) { a.href = siteUrl(); });
+    fitHeadings(document);
   }
   if (LANGS.length) applyLang();
 
@@ -178,7 +239,7 @@
     for (var i = 0; i < total(step); i++) {
       var key = step + i, isOpen = st.open[step] === i, done = !!st.done[key];
       var card = when(key + '.isOpen'), row = when(key + '.closed');
-      if (isOpen) { on(card); anim(card, 'anim-card'); off(row); }
+      if (isOpen) { on(card); anim(card, 'anim-card'); off(row); if (card) fitHeadings(card); }
       else {
         off(card);
         if (row) {
